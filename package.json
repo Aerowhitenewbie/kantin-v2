@@ -1,0 +1,5 @@
+{
+  "name": "kantin-sekolah",
+  "private": true,
+  "dependencies": { "@supabase/supabase-js": "^2.49.8" }
+}
