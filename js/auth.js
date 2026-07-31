@@ -39,8 +39,16 @@ if (document.getElementById('login-form')) {
   if (user) { const p = await getCurrentProfile(); window.location.replace(p?.role === 'admin' ? 'admin.html' : 'dashboard.html'); }
   document.getElementById('login-form').addEventListener('submit', async event => {
     event.preventDefault(); const errorBox = document.getElementById('form-error'); errorBox.textContent = '';
-    const { error } = await supabase.auth.signInWithPassword({ email: document.getElementById('email').value.trim(), password: document.getElementById('password').value });
-    if (error) { errorBox.textContent = 'Email atau kata sandi tidak benar.'; return; }
+    const usernameField = document.getElementById('username');
+    const legacyEmailField = document.getElementById('email');
+    const pinField = document.getElementById('password');
+    const identity = (usernameField?.value || legacyEmailField?.value || '').trim().toLowerCase();
+    if (!identity || !pinField) { errorBox.textContent = 'Form login belum lengkap. Perbarui halaman lalu coba lagi.'; return; }
+    const email = identity.includes('@') ? identity : `${identity}@login.kantin.local`;
+    if (!identity.includes('@') && !/^[a-z0-9._-]{3,40}$/.test(identity)) { errorBox.textContent = 'Username hanya boleh berisi huruf kecil, angka, titik, garis bawah, atau tanda minus.'; return; }
+    if (!/^\d{6}$/.test(pinField.value)) { errorBox.textContent = 'PIN harus terdiri dari tepat 6 angka.'; return; }
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pinField.value });
+    if (error) { errorBox.textContent = 'Username atau PIN tidak benar.'; return; }
     const profile = await getCurrentProfile();
     window.location.replace(profile?.role === 'admin' ? 'admin.html' : 'dashboard.html');
   });
